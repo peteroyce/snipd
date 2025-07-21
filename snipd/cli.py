@@ -144,3 +144,4 @@ def export(fmt: str, output: Optional[str]):
         console.print(f"[green]✓[/green] Exported {len(data)} snippets to {output}")
     else:
         print(out)
+# Syntax themes available: monokai, github-dark, dracula, solarized-dark

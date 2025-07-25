@@ -145,3 +145,4 @@ def export(fmt: str, output: Optional[str]):
     else:
         print(out)
 # Syntax themes available: monokai, github-dark, dracula, solarized-dark
+# export command supports json and toml formats

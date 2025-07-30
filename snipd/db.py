@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import os
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path.home() / ".snipd" / "snippets.db"
+_DEFAULT_DB_PATH = Path.home() / ".snipd" / "snippets.db"
+
+# Allow SNIPD_DB environment variable to override the default DB path
+DB_PATH: Path = Path(os.environ["SNIPD_DB"]) if "SNIPD_DB" in os.environ else _DEFAULT_DB_PATH
 
 
 def get_conn() -> sqlite3.Connection:

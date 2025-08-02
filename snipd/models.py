@@ -9,8 +9,15 @@ from typing import Optional
 import click
 
 from snipd.db import get_conn
+from snipd.constants import MAX_BODY_BYTES
 
-MAX_BODY_BYTES = 500_000  # 500 KB
+# Structural mapping: only these field names are allowed in UPDATE statements.
+# Keys are Python kwarg names; values are the exact SQL column names.
+ALLOWED_UPDATE_FIELDS: dict[str, str] = {
+    "title": "title",
+    "language": "language",
+    "body": "body",
+}
 
 
 @dataclass
@@ -34,6 +41,8 @@ def _validate_body(body: str) -> None:
 
 
 def create_snippet(title: str, language: str, body: str, tags: list[str]) -> Snippet:
+    if not title or not title.strip():
+        raise click.ClickException("Title cannot be empty")
     # Normalize language: lowercase + strip whitespace
     language = language.strip().lower()
     _validate_body(body)
@@ -100,27 +109,37 @@ def delete_snippet(snippet_id: int) -> bool:
 
 
 def update_snippet(snippet_id: int, **kwargs) -> Optional[Snippet]:
-    allowed = {"title", "language", "body"}
-    fields = {k: v for k, v in kwargs.items() if k in allowed and v is not None}
-    # Normalize language if being updated
-    if "language" in fields:
-        fields["language"] = fields["language"].strip().lower()
-    # Validate body size if being updated
-    if "body" in fields:
-        _validate_body(fields["body"])
+    # Build the SET clause using the structural whitelist mapping (never f-string with user keys).
+    set_parts: list[str] = []
+    values: list = []
+    for k, v in kwargs.items():
+        if k == "tags":
+            continue  # handled separately below
+        if v is None:
+            continue
+        if k not in ALLOWED_UPDATE_FIELDS:
+            raise ValueError(f"Field {k!r} not allowed")
+        # Normalize language if being updated
+        if k == "language":
+            v = v.strip().lower()
+        # Validate body size if being updated
+        if k == "body":
+            _validate_body(v)
+        set_parts.append(f"{ALLOWED_UPDATE_FIELDS[k]} = ?")
+        values.append(v)
 
     tags_provided = "tags" in kwargs and kwargs["tags"] is not None
 
     # Nothing to update at all
-    if not fields and not tags_provided:
+    if not set_parts and not tags_provided:
         return get_snippet(snippet_id)
 
     with get_conn() as conn:
-        if fields:
-            set_clause = ", ".join(f"{k} = ?" for k in fields)
+        if set_parts:
+            set_clause = ", ".join(set_parts)
             conn.execute(
                 f"UPDATE snippets SET {set_clause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                [*fields.values(), snippet_id],
+                [*values, snippet_id],
             )
         if tags_provided:
             _set_tags(conn, snippet_id, kwargs["tags"])
@@ -145,7 +164,9 @@ def import_snippets(data: list[dict]) -> list[Snippet]:
 def _set_tags(conn: sqlite3.Connection, snippet_id: int, tags: list[str]) -> None:
     conn.execute("DELETE FROM snippet_tags WHERE snippet_id = ?", (snippet_id,))
     for tag in tags:
-        tag = tag.lower().strip()
+        tag = tag.strip().lower()
+        if not tag:
+            continue  # skip empty / whitespace-only tags
         conn.execute("INSERT OR IGNORE INTO tags (name) VALUES (?)", (tag,))
         tag_id = conn.execute("SELECT id FROM tags WHERE name = ?", (tag,)).fetchone()["id"]
         conn.execute("INSERT OR IGNORE INTO snippet_tags VALUES (?, ?)", (snippet_id, tag_id))

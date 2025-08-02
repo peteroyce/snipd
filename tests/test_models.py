@@ -12,8 +12,8 @@ from snipd.models import (
     list_snippets,
     search_snippets,
     update_snippet,
-    MAX_BODY_BYTES,
 )
+from snipd.constants import MAX_BODY_BYTES
 
 
 @pytest.fixture(autouse=True)
@@ -155,3 +155,37 @@ def test_import_snippets():
     assert created[0].title == "Imported A"
     all_s = list_snippets()
     assert len(all_s) == 2
+
+
+# ---------------------------------------------------------------------------
+# Edge cases (title validation, empty tag rejection, update field guard)
+# ---------------------------------------------------------------------------
+
+def test_create_whitespace_only_title_raises():
+    """create_snippet with a whitespace-only title must raise ClickException."""
+    import click
+    with pytest.raises(click.ClickException, match="[Tt]itle"):
+        create_snippet("   ", "python", "pass", [])
+
+
+def test_create_empty_title_raises():
+    """create_snippet with an empty string title must raise ClickException."""
+    import click
+    with pytest.raises(click.ClickException, match="[Tt]itle"):
+        create_snippet("", "python", "pass", [])
+
+
+def test_whitespace_only_tag_not_stored():
+    """Tags that are whitespace-only after strip() must NOT appear in the DB."""
+    s = create_snippet("Tag Edge Case", "python", "x = 1", ["  ", "\t", "valid"])
+    # Only "valid" should survive; the two whitespace-only entries must be dropped
+    assert s.tags == ["valid"]
+    assert "" not in s.tags
+    assert "  " not in s.tags
+
+
+def test_update_snippet_disallowed_field_raises():
+    """update_snippet with a field name not in ALLOWED_UPDATE_FIELDS must raise ValueError."""
+    s = create_snippet("Guard Test", "python", "pass", [])
+    with pytest.raises(ValueError, match="not allowed"):
+        update_snippet(s.id, evil_column="DROP TABLE snippets")

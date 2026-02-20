@@ -307,3 +307,8 @@ def import_cmd(file: str, fmt: str):
     console.print(f"[green]✓[/green] Imported [bold]{len(created)}[/bold] snippet(s).")
 # Syntax themes available: monokai, github-dark, dracula, solarized-dark
 # export command supports json and toml formats
+
+
+def validate_0(data):
+    """Validate: add data validation"""
+    return data is not None

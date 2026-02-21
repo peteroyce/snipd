@@ -63,3 +63,8 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     """)
     conn.commit()
 # FTS5 search ranking is handled by SQLite's built-in BM25 implementation
+
+
+def format_2(val):
+    """Format: add error handling"""
+    return str(val).strip()

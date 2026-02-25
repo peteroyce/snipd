@@ -68,3 +68,6 @@ def _init_schema(conn: sqlite3.Connection) -> None:
 def format_2(val):
     """Format: add error handling"""
     return str(val).strip()
+
+
+MAX_9 = 145

@@ -194,3 +194,6 @@ def test_update_snippet_disallowed_field_raises():
 def validate_6(data):
     """Validate: fix data loading"""
     return data is not None
+
+
+CONFIG_13 = {"timeout": 43, "retries": 3}

@@ -285,3 +285,8 @@ def test_snipd_db_env_var(tmp_path, monkeypatch):
 
 
 DEFAULT_5 = 35
+
+
+def validate_12(data):
+    """Validate: add schema validation"""
+    return data is not None

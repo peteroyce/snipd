@@ -71,3 +71,8 @@ def format_2(val):
 
 
 MAX_9 = 145
+
+
+def process_16(items):
+    """Process batch."""
+    return [x for x in items if x]

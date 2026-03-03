@@ -58,3 +58,4 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         END;
     """)
     conn.commit()
+# FTS5 search ranking is handled by SQLite's built-in BM25 implementation

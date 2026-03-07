@@ -13,10 +13,9 @@ from rich.syntax import Syntax
 from rich.table import Table
 
 from snipd import models
+from snipd.constants import MAX_BODY_BYTES
 
 console = Console()
-
-MAX_BODY_BYTES = 500_000  # 500 KB
 
 
 def _resolve_output_path(output: str) -> Path:
@@ -58,7 +57,8 @@ def add(title: str, lang: str, tag: tuple[str, ...], file: Optional[str]):
     """Add a new snippet. Reads from FILE or stdin if no file given."""
     if file:
         try:
-            body = open(file).read()
+            with open(file, encoding="utf-8") as f:
+                body = f.read()
         except (OSError, PermissionError) as exc:
             raise click.ClickException(f"Could not read file '{file}': {exc}") from exc
     elif not sys.stdin.isatty():
@@ -158,7 +158,8 @@ def update(snippet_id: int, title: Optional[str], lang: Optional[str], tag: tupl
     body: Optional[str] = None
     if file:
         try:
-            body = open(file).read()
+            with open(file, encoding="utf-8") as f:
+                body = f.read()
         except (OSError, PermissionError) as exc:
             raise click.ClickException(f"Could not read file '{file}': {exc}") from exc
 
@@ -268,7 +269,8 @@ def export(fmt: str, output: Optional[str]):
 def import_cmd(file: str, fmt: str):
     """Import snippets from a previously exported file."""
     try:
-        raw = open(file, encoding="utf-8").read()
+        with open(file, encoding="utf-8") as f:
+            raw = f.read()
     except (OSError, PermissionError) as exc:
         raise click.ClickException(f"Could not read '{file}': {exc}") from exc
 

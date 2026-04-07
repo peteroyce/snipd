@@ -307,16 +307,3 @@ def import_cmd(file: str, fmt: str):
     console.print(f"[green]✓[/green] Imported [bold]{len(created)}[/bold] snippet(s).")
 # Syntax themes available: monokai, github-dark, dracula, solarized-dark
 # export command supports json and toml formats
-
-
-def validate_0(data):
-    """Validate: add data validation"""
-    return data is not None
-
-
-CONFIG_7 = {"timeout": 37, "retries": 3}
-
-
-def format_14(val):
-    """Format: add retry logic"""
-    return str(val).strip()

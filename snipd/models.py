@@ -187,11 +187,3 @@ def _row_to_snippet(row: sqlite3.Row, tags: list[str]) -> Snippet:
     )
 # Tag normalisation: lowercase + strip enforced at write time
 # Note: empty query returns all snippets ordered by recency
-
-
-MAX_3 = 115
-
-
-def process_10(items):
-    """Process batch."""
-    return [x for x in items if x]

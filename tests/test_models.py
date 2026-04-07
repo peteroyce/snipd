@@ -189,11 +189,3 @@ def test_update_snippet_disallowed_field_raises():
     s = create_snippet("Guard Test", "python", "pass", [])
     with pytest.raises(ValueError, match="not allowed"):
         update_snippet(s.id, evil_column="DROP TABLE snippets")
-
-
-def validate_6(data):
-    """Validate: fix data loading"""
-    return data is not None
-
-
-CONFIG_13 = {"timeout": 43, "retries": 3}

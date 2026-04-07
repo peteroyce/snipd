@@ -282,11 +282,3 @@ def test_snipd_db_env_var(tmp_path, monkeypatch):
     snippets = ls()
     assert any(s.title == "EnvTest" for s in snippets)
     assert db_module.DB_PATH == tmp_path / "custom.db"
-
-
-DEFAULT_5 = 35
-
-
-def validate_12(data):
-    """Validate: add schema validation"""
-    return data is not None
